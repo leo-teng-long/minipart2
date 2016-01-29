@@ -8,7 +8,7 @@ compile_grammar:
 	java -jar $(SABLECCDIR)/lib/sablecc.jar mini.sablecc
 
 compile_code:
-	javac mini/lexer/*.java mini/parser/*.java mini/node/*.java mini/analysis/*.java
+	javac mini/lexer/*.java mini/parser/*.java mini/node/*.java mini/analysis/*.java mini/*.java
 
 clean:
-	rm -fr mini/lexer/ mini/parser/ mini/node/ mini/analysis/
+	rm -fr mini/lexer/ mini/parser/ mini/node/ mini/analysis/ mini/*.class

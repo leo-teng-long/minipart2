@@ -58,142 +58,122 @@ Ignored Tokens
 Productions
 
   prog {-> prog} =
-    {program}           decls stmts
-                        {-> New prog.program(decls.decl, stmts.stmt)};
+    {program}             decl_list stmt_list
+                          {-> New prog.program([decl_list.decl], [stmt_list.stmt])};
 
-  decls {-> decl*} =
-    {list}              decls decl
-                        {-> [decls.decl, decl.decl]}
-  | {empty};
+  decl_list {-> decl*} =
+    {list}                decl_list decl
+                          {-> [decl_list.decl, decl.decl]}
+  | {empty}               {-> []};
 
   decl {-> decl} =
-    {declare}           var id col type semi
-                        {-> New decl.declare(term.expr, type.type)};
+    {declare}             var id col type semi
+                          {-> New decl.declare(id, type)};
 
   type {-> type} =
-    {int}               int
-                        {-> New type.int(int)}
-  | {float}             float
-                        {-> New type.float(float)}
-  | {string}            string
-                        {-> New type.string(string)};
+    {int}                 int
+                          {-> New type.int(int)}
+  | {float}               float
+                          {-> New type.float(float)}
+  | {string}              string
+                          {-> New type.string(string)};
 
-  stmts {-> stmt*} =
-    {list}              stmts stmt
-                        {-> [stmts.stmt, stmt.stmt]}
-  | {empty};
+  stmt_list {-> stmt*} =
+    {list}                stmt_list stmt
+                          {-> [stmt_list.stmt, stmt.stmt]}
+  | {empty}               {-> []};
 
   stmt {-> stmt} =
-    {assign}            assign
-                        {-> assign.assign}
-  | {ifelse}            ifelse
-                        {-> ifelse.ifelse}
-  | {loop}              loop
-                        {-> loop.loop}
-  | {input}             input
-                        {-> input.input}
-  | {output}            output
-                        {-> output.output};
+    {assign}              assign
+                          {-> assign.stmt}
+  | {ifelse}              ifelse
+                          {-> ifelse.stmt}
+  | {loop}                loop
+                          {-> loop.stmt}
+  | {input}               input
+                          {-> input.stmt}
+  | {output}              output
+                          {-> output.stmt};
 
-  assign {-> assign} =
-    {assign}            id equal expr semi
-                        {-> New stmt.assign(term.expr, expr.expr)};
+  assign {-> stmt} =
+    {assign}              id equal expr semi
+                          {-> New stmt.assign(id, expr.expr)};
 
-  ifelse {-> ifelse} =
-    {if}                if expr then stmts endif
-                        {-> New stmt.if(expr.expr, stmts.stms)}
-  | {ifelse}            if expr then [then_stmts]:stmts else [else_stmts]:stmts endif
-                        {-> New stmt.ifelse(expr.expr, then_stmts.stmts, else_stmts.stmts)};
+  ifelse {-> stmt} =
+    {if}                  if expr then stmt_list endif
+                          {-> New stmt.if(expr.expr, [stmt_list.stmt])}
+  | {ifelse}              if expr then [then_stmts]:stmt_list else [else_stmts]:stmt_list endif
+                          {-> New stmt.ifelse(expr.expr, [then_stmts.stmt], [else_stmts.stmt])};
 
-  loop {-> ifelse} =
-    {while}             while expr do stmts done
-                        {-> New stmt.while(expr.expr, stmts.stmts)};
+  loop {-> stmt} =
+    {while}               while expr do stmt_list done
+                          {-> New stmt.while(expr.expr, [stmt_list.stmt])};
 
-  input {-> input} =
-    {read}              read id semi
-                        {-> New stmt.read(term.expr)};
+  input {-> stmt} =
+    {read}                read id semi
+                          {-> New stmt.read(id)};
 
-  output {-> output} =
-    {print}             print expr semi
-                        {-> New stmt.print(expr.expr)};
+  output {-> stmt} =
+    {print}               print expr semi
+                          {-> New stmt.print(expr.expr)};
 
   expr {-> expr} =
-    {plut}              expr plus factor
-                        {-> New expr.plus(expr.expr, factor.expr)}
-  | {minus}             expr minus factor
-                        {-> New expr.minus(expr.expr, factor.expr)}
-  | {factor}            factor
-                        {-> factor.expr};
+    {plus}                expr plus factor
+                          {-> New expr.plus(expr.expr, factor.expr)}
+  | {minus}               expr minus factor
+                          {-> New expr.minus(expr.expr, factor.expr)}
+  | {factor}              factor
+                          {-> factor.expr};
 
   factor {-> expr} =
-    {multiply}          factor mul term
-                        {-> New expr.multiply(factor.expr, term.expr)}
-  | {divide}            factor div term
-                        {-> New expr.divide(factor.expr, term.expr)}
-  | {term}              term
-                        {-> term.expr};
+    {multiply}            factor mul term
+                          {-> New expr.multiply(factor.expr, term.expr)}
+  | {divide}              factor div term
+                          {-> New expr.divide(factor.expr, term.expr)}
+  | {term}                term
+                          {-> term.expr};
 
   term {-> expr} =
-    {paren}             l_par expr r_par
-                        {-> expr.expr}
-  | {unary}             minus term
-                        {-> New expr.unary(term.expr)}
-  | {id}                id
-                        {-> New expr.id(id)}
-  | {int}               intconst
-                        {-> New expr.int(intconst)}
-  | {float}             floatconst
-                        {-> New expr.float(floatconst)}
-  | {string}            stringconst
-                        {-> New expr.string(stringconst)};
+    {paren}               l_par expr r_par
+                          {-> expr.expr}
+  | {unary}               minus term
+                          {-> New expr.unary(term.expr)}
+  | {id}                  id
+                          {-> New expr.id(id)}
+  | {int}                 intconst
+                          {-> New expr.int(intconst)}
+  | {float}               floatconst
+                          {-> New expr.float(floatconst)}
+  | {string}              stringconst
+                          {-> New expr.string(stringconst)};
 
 Abstract Syntax Tree
-  prog =
-    {program}   [l]:decls [r]:stmts;
 
-  decls =
-                decl+;
+  prog =
+    {program}   [decl_list]:decl* [stmt_list]:stmt*;
 
   decl =
-    {declare}   [l]:expr [r]:type;
+    {declare}   [id]:id [type]:type;
 
   type =
     {int}       int
   | {float}     float
   | {string}    string;
 
-  stmts =
-                stmt+;
-
-  assign =
-                stmt;
-
-  ifelse =
-                stmt;
-
-  loop =
-                stmt;
-
-  input =
-                stmt;
-
-  output =
-                stmt;
-
   stmt =
-    {assign}    [l]:expr [r]:expr
-  | {if}        [l]:expr [r]:expr
-  | {ifelse}    [condition]:expr [then]:stmts [else]:stmts
-  | {while}     [l]:expr [r]:stmts
-  | {read}      expr
+    {assign}    [id]:id [expr]:expr
+  | {if}        [expr]:expr [then_stmts]:stmt*
+  | {ifelse}    [expr]:expr [then_stmts]:stmt* [else_stmts]:stmt*
+  | {while}     [expr]:expr [do_stmts]:stmt*
+  | {read}      id
   | {print}     expr;
 
   expr =
-    {unary}     expr
-  | {plus}      [l]:expr [r]:expr
-  | {minus}     [l]:expr [r]:expr
-  | {multiply}  [l]:expr [r]:expr
-  | {divide}    [l]:expr [r]:expr
+    {plus}      [left]:expr [right]:expr
+  | {minus}     [left]:expr [right]:expr
+  | {multiply}  [left]:expr [right]:expr
+  | {divide}    [left]:expr [right]:expr
+  | {unary}     expr
   | {id}        id
   | {int}       intconst
   | {float}     floatconst

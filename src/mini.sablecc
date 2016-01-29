@@ -1,0 +1,200 @@
+
+Package mini;
+
+Helpers
+
+  all                = [0..0xffff];
+  digit              = ['0'..'9'];
+  lowercase          = ['a'..'z'];
+  uppercase          = ['A'..'Z'];
+  letter             = lowercase | uppercase;
+  letter_or_us       = letter | '_';
+  letter_digit_or_us = letter | digit | '_';
+  separator          = ',' | '.' | '?' | '!';
+  space              = ' ';
+  tab                = 9;
+  cr                 = 13;
+  lf                 = 10;
+
+Tokens
+
+  var    = 'var';
+  int    = 'int';
+  float  = 'float';
+  string = 'string';
+  while  = 'while';
+  do     = 'do';
+  done   = 'done';
+  if     = 'if';
+  then   = 'then';
+  else   = 'else';
+  endif  = 'endif';
+  read   = 'read';
+  print  = 'print';
+
+  equal  = '=';
+  plus   = '+';
+  minus  = '-';
+  mul    = '*';
+  div    = '/';
+  l_par  = '(';
+  r_par  = ')';
+  col    = ':';
+  semi   = ';';
+
+  id          = letter_or_us letter_digit_or_us*;
+  intconst    = '0' | [digit - '0'] digit*;
+  floatconst  = ('0' | [digit - '0'] digit*) '.' digit* | '.' digit+;
+  stringconst = '"' (letter | digit | space | separator)* '"';
+
+  comment = '#' [all - lf]* lf;
+  blank   = (space | tab)+;
+  eol     = cr | lf | cr lf;
+
+Ignored Tokens
+
+  comment, blank, eol;
+
+Productions
+
+  prog {-> prog} =
+    {program}           decls stmts
+                        {-> New prog.program(decls.decl, stmts.stmt)};
+
+  decls {-> decl*} =
+    {list}              decls decl
+                        {-> [decls.decl, decl.decl]}
+  | {empty};
+
+  decl {-> decl} =
+    {declare}           var id col type semi
+                        {-> New decl.declare(term.expr, type.type)};
+
+  type {-> type} =
+    {int}               int
+                        {-> New type.int(int)}
+  | {float}             float
+                        {-> New type.float(float)}
+  | {string}            string
+                        {-> New type.string(string)};
+
+  stmts {-> stmt*} =
+    {list}              stmts stmt
+                        {-> [stmts.stmt, stmt.stmt]}
+  | {empty};
+
+  stmt {-> stmt} =
+    {assign}            assign
+                        {-> assign.assign}
+  | {ifelse}            ifelse
+                        {-> ifelse.ifelse}
+  | {loop}              loop
+                        {-> loop.loop}
+  | {input}             input
+                        {-> input.input}
+  | {output}            output
+                        {-> output.output};
+
+  assign {-> assign} =
+    {assign}            id equal expr semi
+                        {-> New stmt.assign(term.expr, expr.expr)};
+
+  ifelse {-> ifelse} =
+    {if}                if expr then stmts endif
+                        {-> New stmt.if(expr.expr, stmts.stms)}
+  | {ifelse}            if expr then [then_stmts]:stmts else [else_stmts]:stmts endif
+                        {-> New stmt.ifelse(expr.expr, then_stmts.stmts, else_stmts.stmts)};
+
+  loop {-> ifelse} =
+    {while}             while expr do stmts done
+                        {-> New stmt.while(expr.expr, stmts.stmts)};
+
+  input {-> input} =
+    {read}              read id semi
+                        {-> New stmt.read(term.expr)};
+
+  output {-> output} =
+    {print}             print expr semi
+                        {-> New stmt.print(expr.expr)};
+
+  expr {-> expr} =
+    {plut}              expr plus factor
+                        {-> New expr.plus(expr.expr, factor.expr)}
+  | {minus}             expr minus factor
+                        {-> New expr.minus(expr.expr, factor.expr)}
+  | {factor}            factor
+                        {-> factor.expr};
+
+  factor {-> expr} =
+    {multiply}          factor mul term
+                        {-> New expr.multiply(factor.expr, term.expr)}
+  | {divide}            factor div term
+                        {-> New expr.divide(factor.expr, term.expr)}
+  | {term}              term
+                        {-> term.expr};
+
+  term {-> expr} =
+    {paren}             l_par expr r_par
+                        {-> expr.expr}
+  | {unary}             minus term
+                        {-> New expr.unary(term.expr)}
+  | {id}                id
+                        {-> New expr.id(id)}
+  | {int}               intconst
+                        {-> New expr.int(intconst)}
+  | {float}             floatconst
+                        {-> New expr.float(floatconst)}
+  | {string}            stringconst
+                        {-> New expr.string(stringconst)};
+
+Abstract Syntax Tree
+  prog =
+    {program}   [l]:decls [r]:stmts;
+
+  decls =
+                decl+;
+
+  decl =
+    {declare}   [l]:expr [r]:type;
+
+  type =
+    {int}       int
+  | {float}     float
+  | {string}    string;
+
+  stmts =
+                stmt+;
+
+  assign =
+                stmt;
+
+  ifelse =
+                stmt;
+
+  loop =
+                stmt;
+
+  input =
+                stmt;
+
+  output =
+                stmt;
+
+  stmt =
+    {assign}    [l]:expr [r]:expr
+  | {if}        [l]:expr [r]:expr
+  | {ifelse}    [condition]:expr [then]:stmts [else]:stmts
+  | {while}     [l]:expr [r]:stmts
+  | {read}      expr
+  | {print}     expr;
+
+  expr =
+    {unary}     expr
+  | {plus}      [l]:expr [r]:expr
+  | {minus}     [l]:expr [r]:expr
+  | {multiply}  [l]:expr [r]:expr
+  | {divide}    [l]:expr [r]:expr
+  | {id}        id
+  | {int}       intconst
+  | {float}     floatconst
+  | {string}    stringconst;

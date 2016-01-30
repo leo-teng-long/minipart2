@@ -68,15 +68,12 @@ Productions
 
   decl {-> decl} =
     {declare}             var id col type semi
-                          {-> New decl.declare(id, type.type)};
+                          {-> New decl.declare(id, type)};
 
-  type {-> type} =
+  type =
     {int}                 int
-                          {-> New type.int(int)}
   | {float}               float
-                          {-> New type.float(float)}
-  | {string}              string
-                          {-> New type.string(string)};
+  | {string}              string;
 
   stmt_list {-> stmt*} =
     {list}                stmt_list stmt

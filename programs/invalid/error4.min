@@ -1,0 +1,11 @@
+# Invalid condition
+
+var x : int;
+var y : int;
+x = 10;
+y = 10;
+
+while 10 + (x + y) do
+  print x;
+  print y;
+done

@@ -14,92 +14,179 @@ public class TypeChecker extends DepthFirstAdapter {
     /* Constructor */
   }
 
+  /* Declaration */
   public void outADeclareDecl(ADeclareDecl node) {
     TId id = node.getId();
     PType type = node.getType();
     String key = id.getText();
 
     if (symbolTable.containsKey(key)) {
-      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Indentifier " + key + " already declared.");
+      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Identifier " + key + " already declared.");
       System.exit(0);
     } else {
       symbolTable.put(key, type);
     }
   }
 
+  /* Assignment */
+  public void outAAssignStmt(AAssignStmt node) {
+    TId id = node.getId();
+    String key = id.getText();
+
+    PType type = symbolTable.get(key);
+    PExpr expr = getExprType(node.getExpr());
+
+    /* int var */
+    if (utility.isAIntType(type) && !isExprTypeInt(expr)) {
+      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
+      System.exit(0);
+    }
+    /* float var */
+    if (utility.isAFloatType(type) && !(isExprTypeInt(expr) || isExprTypeFloat(expr))) {
+      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
+      System.exit(0);
+    }
+    /* string var */
+    if (utility.isAStringType(type) && !isExprTypeString(expr)) {
+      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
+      System.exit(0);
+    }
+  }
+
+  /* If statment */
+  public void outAIfStmt(AIfStmt node) {
+    PExpr expr = getExprType(node.getExpr());
+
+    if (!isExprTypeInt(expr)) {
+      System.out.println("Error: Condition does not evaluate to type int.");
+      System.exit(0);
+    }
+  }
+
+  /* If-else statement */
+  public void outAIfelseStmt(AIfelseStmt node) {
+    PExpr expr = getExprType(node.getExpr());
+
+    if (!isExprTypeInt(expr)) {
+      System.out.println("Error: Condition does not evaluate to type int.");
+      System.exit(0);
+    }
+  }
+
+  /* While statement */
+  public void outAWhileStmt(AWhileStmt node) {
+    PExpr expr = getExprType(node.getExpr());
+
+    if (!isExprTypeInt(expr)) {
+      System.out.println("Error: Condition does not evaluate to type int.");
+      System.exit(0);
+    }
+  }
+
+  /* Plus expression */
   public void outAPlusExpr(APlusExpr node) {
     PExpr leftExpr = getExprType(node.getLeft());
     PExpr rightExpr = getExprType(node.getRight());
 
+    if (isExprTypeString(leftExpr) && !isExprTypeString(rightExpr)) {
+      System.out.println("Error: string | non-string addition not allowed.");
+      System.exit(0);
+    }
+    if (!isExprTypeString(leftExpr) && isExprTypeString(rightExpr)) {
+      System.out.println("Error: string | non-string addition not allowed.");
+      System.exit(0);
+    }
   }
 
+  /* Minus expression */
   public void outAMinusExpr(AMinusExpr node) {
-    PExpr left = getExprType(node.getLeft());
-    PExpr right = getExprType(node.getRight());
+    PExpr leftExpr = getExprType(node.getLeft());
+    PExpr rightExpr = getExprType(node.getRight());
 
-
+    if (isExprTypeString(leftExpr) && !isExprTypeString(rightExpr)) {
+      System.out.println("Error: string | non-string subtraction not allowed.");
+      System.exit(0);
+    }
+    if (!isExprTypeString(leftExpr) && isExprTypeString(rightExpr)) {
+      System.out.println("Error: string | non-string subtraction not allowed.");
+      System.exit(0);
+    }
   }
 
+  /* Times expression */
   public void outATimesExpr(ATimesExpr node) {
     PExpr leftExpr = getExprType(node.getLeft());
     PExpr rightExpr = getExprType(node.getRight());
 
-    if (utility.isAStringExpr(leftExpr) || utility.isAStringExpr(rightExpr)) {
-      TStringconst str;
-      if (utility.isAStringExpr(leftExpr)) {
-        str = ((AStringExpr) leftExpr).getStringconst();
-      } else {
-        str = ((AStringExpr) rightExpr).getStringconst();
-      }
-
-      printStringExprTypeError(str.getLine(), str.getPos(), "*");
+    if (isExprTypeString(leftExpr) || isExprTypeString(rightExpr)) {
+      System.out.println("Error: * cannot be applied to string type.");
       System.exit(0);
-    }
-
-    if (utility.isAIdExpr(leftExpr) || utility.isAIdExpr(rightExpr)) {
-      TId id;
-      if (utility.isAIdExpr(leftExpr)) {
-        id = ((AIdExpr) leftExpr).getId();
-      } else {
-        id = ((AIdExpr) rightExpr).getId();
-      }
-
-      String key = id.getText();
-      if (utility.isAStringType(symbolTable.get(key))) {
-        printStringExprTypeError(id.getLine(), id.getPos(), "*");
-      }
     }
   }
 
+  /* Divide expression */
   public void outADivideExpr(ADivideExpr node) {
     PExpr leftExpr = getExprType(node.getLeft());
     PExpr rightExpr = getExprType(node.getRight());
 
-    if (utility.isAStringExpr(leftExpr) || utility.isAStringExpr(rightExpr)) {
-      TStringconst str;
-      if (utility.isAStringExpr(leftExpr)) {
-        str = ((AStringExpr) leftExpr).getStringconst();
-      } else {
-        str = ((AStringExpr) rightExpr).getStringconst();
-      }
-
-      printStringExprTypeError(str.getLine(), str.getPos(), "/");
+    if (isExprTypeString(leftExpr) || isExprTypeString(rightExpr)) {
+      System.out.println("Error: / cannot be applied to string type.");
       System.exit(0);
     }
+  }
 
-    if (utility.isAIdExpr(leftExpr) || utility.isAIdExpr(rightExpr)) {
-      TId id;
-      if (utility.isAIdExpr(leftExpr)) {
-        id = ((AIdExpr) leftExpr).getId();
-      } else {
-        id = ((AIdExpr) rightExpr).getId();
-      }
+  /* Id expression */
+  public void outAIdExpr(AIdExpr node) {
+    TId id = node.getId();
+    String key = id.getText();
 
-      String key = id.getText();
-      if (utility.isAStringType(symbolTable.get(key))) {
-        printStringExprTypeError(id.getLine(), id.getPos(), "/");
-      }
+    if (!symbolTable.containsKey(key)) {
+      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Identifier " + key + " not declared.");
+      System.exit(0);
     }
+  }
+
+  /**********************************************
+  * Private methods *****************************
+  **********************************************/
+
+  private boolean isExprTypeInt(PExpr expr) {
+    return utility.isAIntExpr(expr) || isIdTypeInt(expr);
+  }
+
+  private boolean isExprTypeFloat(PExpr expr) {
+    return utility.isAFloatExpr(expr) || isIdTypeFloat(expr);
+  }
+
+  private boolean isExprTypeString(PExpr expr) {
+    return utility.isAStringExpr(expr) || isIdTypeString(expr);
+  }
+
+  private boolean isIdTypeInt(PExpr expr) {
+    if (!utility.isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return utility.isAIntType(symbolTable.get(key));
+  }
+
+  private boolean isIdTypeFloat(PExpr expr) {
+    if (!utility.isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return utility.isAFloatType(symbolTable.get(key));
+  }
+
+  private boolean isIdTypeString(PExpr expr) {
+    if (!utility.isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return utility.isAStringType(symbolTable.get(key));
   }
 
   private PExpr getExprType(PExpr expr) {
@@ -131,23 +218,16 @@ public class TypeChecker extends DepthFirstAdapter {
       }
 
       /* Handle string */
-      if (utility.isAStringExpr(left) || utility.isAStringExpr(right)) {
-        return selectStringExpr(left, right);
+      if (isExprTypeString(left) || isExprTypeString(right)) {
+        return isExprTypeString(left) ? left : right;
       }
-      if (isIdTypeString(left) || isIdTypeString(right)) {
-        return selectIdTypeString(left, right);
-      }
-
       /* Handle float */
-      if (utility.isAFloatExpr(left) || utility.isAFloatExpr(right)) {
-        return selectFloatExpr(left, right);
-      }
-      if (isIdTypeFloat(left) || isIdTypeFloat(right)) {
-        return selectIdTypeFloat(left, right);
+      if (isExprTypeFloat(left) || isExprTypeFloat(right)) {
+        return isExprTypeFloat(left) ? left : right;
       }
 
       /* Handle int */
-      return selectNonIdExpr(left, right);
+      return left;
     }
 
     /* Unary minus expression */
@@ -158,58 +238,6 @@ public class TypeChecker extends DepthFirstAdapter {
 
     /* All base cases */
     return expr;
-  }
-
-  private PExpr selectStringExpr(PExpr left, PExpr right) {
-    return utility.isAStringExpr(left) ? left : right;
-  }
-
-  private boolean isIdTypeString(PExpr expr) {
-    if (!utility.isAIdExpr(expr)) {
-      return false;
-    }
-
-    String key = ((AIdExpr) expr).getId().getText();
-    return utility.isAStringType(symbolTable.get(key));
-  }
-
-  private PExpr selectIdTypeString(PExpr left, PExpr right) {
-    return isIdTypeString(left) ? left : right;
-  }
-
-  private PExpr selectFloatExpr(PExpr left, PExpr right) {
-    return utility.isAFloatExpr(left) ? left : right;
-  }
-
-  private boolean isIdTypeFloat(PExpr expr) {
-    if (!utility.isAIdExpr(expr)) {
-      return false;
-    }
-
-    String key = ((AIdExpr) expr).getId().getText();
-    return utility.isAStringType(symbolTable.get(key));
-  }
-
-  private PExpr selectIdTypeFloat(PExpr left, PExpr right) {
-    return isIdTypeFloat(left) ? left : right;
-  }
-
-  private PExpr selectNonIdExpr(PExpr left, PExpr right) {
-    return !utility.isAIdExpr(left) ? left : right;
-  }
-
-  private void printStringExprTypeError(int line, int pos, String message) {
-    System.out.println("Error: [" + line + "," + pos + "] " + message + " cannot be applied to string.");
-  }
-
-  public void outAIdExpr(AIdExpr node) {
-    TId id = node.getId();
-    String key = id.getText();
-
-    if (!symbolTable.containsKey(key)) {
-      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Undifined identifier " + key + ".");
-      System.exit(0);
-    }
   }
 
 }

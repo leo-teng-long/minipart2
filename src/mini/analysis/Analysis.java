@@ -25,7 +25,7 @@ public interface Analysis extends Switch
     void caseAPrintStmt(APrintStmt node);
     void caseAPlusExpr(APlusExpr node);
     void caseAMinusExpr(AMinusExpr node);
-    void caseAMultiplyExpr(AMultiplyExpr node);
+    void caseATimesExpr(ATimesExpr node);
     void caseADivideExpr(ADivideExpr node);
     void caseAUnaryExpr(AUnaryExpr node);
     void caseAIdExpr(AIdExpr node);

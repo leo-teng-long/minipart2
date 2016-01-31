@@ -5,17 +5,17 @@ package mini.node;
 import mini.analysis.*;
 
 @SuppressWarnings("nls")
-public final class AMultiplyExpr extends PExpr
+public final class ATimesExpr extends PExpr
 {
     private PExpr _left_;
     private PExpr _right_;
 
-    public AMultiplyExpr()
+    public ATimesExpr()
     {
         // Constructor
     }
 
-    public AMultiplyExpr(
+    public ATimesExpr(
         @SuppressWarnings("hiding") PExpr _left_,
         @SuppressWarnings("hiding") PExpr _right_)
     {
@@ -29,7 +29,7 @@ public final class AMultiplyExpr extends PExpr
     @Override
     public Object clone()
     {
-        return new AMultiplyExpr(
+        return new ATimesExpr(
             cloneNode(this._left_),
             cloneNode(this._right_));
     }
@@ -37,7 +37,7 @@ public final class AMultiplyExpr extends PExpr
     @Override
     public void apply(Switch sw)
     {
-        ((Analysis) sw).caseAMultiplyExpr(this);
+        ((Analysis) sw).caseATimesExpr(this);
     }
 
     public PExpr getLeft()

@@ -153,7 +153,7 @@ public class AnalysisAdapter implements Analysis
     }
 
     @Override
-    public void caseAMultiplyExpr(AMultiplyExpr node)
+    public void caseATimesExpr(ATimesExpr node)
     {
         defaultCase(node);
     }

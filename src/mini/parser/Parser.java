@@ -327,7 +327,7 @@ public class Parser
                 push(goTo(11), list);
             }
             break;
-            case 23: /* reduce AMultiplyFactor */
+            case 23: /* reduce ATimesFactor */
             {
                 ArrayList<Object> list = new23();
                 push(goTo(12), list);
@@ -915,7 +915,7 @@ public class Parser
 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    ArrayList<Object> new23() /* reduce AMultiplyFactor */
+    ArrayList<Object> new23() /* reduce ATimesFactor */
     {
         @SuppressWarnings("hiding") ArrayList<Object> nodeList = new ArrayList<Object>();
 
@@ -930,7 +930,7 @@ public class Parser
         pexprNode2 = (PExpr)nodeArrayList1.get(0);
         pexprNode3 = (PExpr)nodeArrayList3.get(0);
 
-        pexprNode1 = new AMultiplyExpr(pexprNode2, pexprNode3);
+        pexprNode1 = new ATimesExpr(pexprNode2, pexprNode3);
         }
 	nodeList.add(pexprNode1);
         return nodeList;

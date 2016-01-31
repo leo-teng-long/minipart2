@@ -369,20 +369,20 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         outAMinusExpr(node);
     }
 
-    public void inAMultiplyExpr(AMultiplyExpr node)
+    public void inATimesExpr(ATimesExpr node)
     {
         defaultIn(node);
     }
 
-    public void outAMultiplyExpr(AMultiplyExpr node)
+    public void outATimesExpr(ATimesExpr node)
     {
         defaultOut(node);
     }
 
     @Override
-    public void caseAMultiplyExpr(AMultiplyExpr node)
+    public void caseATimesExpr(ATimesExpr node)
     {
-        inAMultiplyExpr(node);
+        inATimesExpr(node);
         if(node.getRight() != null)
         {
             node.getRight().apply(this);
@@ -391,7 +391,7 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
         {
             node.getLeft().apply(this);
         }
-        outAMultiplyExpr(node);
+        outATimesExpr(node);
     }
 
     public void inADivideExpr(ADivideExpr node)

@@ -363,20 +363,20 @@ public class DepthFirstAdapter extends AnalysisAdapter
         outAMinusExpr(node);
     }
 
-    public void inAMultiplyExpr(AMultiplyExpr node)
+    public void inATimesExpr(ATimesExpr node)
     {
         defaultIn(node);
     }
 
-    public void outAMultiplyExpr(AMultiplyExpr node)
+    public void outATimesExpr(ATimesExpr node)
     {
         defaultOut(node);
     }
 
     @Override
-    public void caseAMultiplyExpr(AMultiplyExpr node)
+    public void caseATimesExpr(ATimesExpr node)
     {
-        inAMultiplyExpr(node);
+        inATimesExpr(node);
         if(node.getLeft() != null)
         {
             node.getLeft().apply(this);
@@ -385,7 +385,7 @@ public class DepthFirstAdapter extends AnalysisAdapter
         {
             node.getRight().apply(this);
         }
-        outAMultiplyExpr(node);
+        outATimesExpr(node);
     }
 
     public void inADivideExpr(ADivideExpr node)

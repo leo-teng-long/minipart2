@@ -123,8 +123,8 @@ Productions
                           {-> factor.expr};
 
   factor {-> expr} =
-    {multiply}            factor mul term
-                          {-> New expr.multiply(factor.expr, term.expr)}
+    {times}               factor mul term
+                          {-> New expr.times(factor.expr, term.expr)}
   | {divide}              factor div term
                           {-> New expr.divide(factor.expr, term.expr)}
   | {term}                term
@@ -168,7 +168,7 @@ Abstract Syntax Tree
   expr =
     {plus}      [left]:expr [right]:expr
   | {minus}     [left]:expr [right]:expr
-  | {multiply}  [left]:expr [right]:expr
+  | {times}     [left]:expr [right]:expr
   | {divide}    [left]:expr [right]:expr
   | {unary}     expr
   | {id}        id

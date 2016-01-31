@@ -20,135 +20,196 @@ public class TypeChecker extends DepthFirstAdapter {
     String key = id.getText();
 
     if (symbolTable.containsKey(key)) {
-      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Indentifier \"" + key + "\" already declared.");
+      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Indentifier " + key + " already declared.");
       System.exit(0);
     } else {
       symbolTable.put(key, type);
     }
   }
 
-  private PExpr getExprType(PExpr node) {
-    /* Terminal node */
-    if (utility.isAIdExpr(node) || utility.isAIntExpr(node) || utility.isAFloatExpr(node) || utility.isAStringExpr(node)) {
-      return node;
-    }
+  public void outAPlusExpr(APlusExpr node) {
+    PExpr leftExpr = getExprType(node.getLeft());
+    PExpr rightExpr = getExprType(node.getRight());
 
-    /* Handle '+' | '-' */
-    if (utility.isAPlusExpr(node) || utility.isAMinusExpr(node)) {
-      PExpr leftExpr;
-      PExpr rightExpr;
-      if (utility.isAPlusExpr(node)) {
-        leftExpr = getExprType(((APlusExpr) node).getLeft());
-        rightExpr = getExprType(((APlusExpr) node).getRight());
-      } else {
-        leftExpr = getExprType(((AMinusExpr) node).getLeft());
-        rightExpr = getExprType(((AMinusExpr) node).getRight());
-      }
+  }
 
-      if (utility.isAStringExpr(leftExpr) && utility.isAStringExpr(rightExpr)) {
-        return (PExpr) new AStringExpr();
-      }
+  public void outAMinusExpr(AMinusExpr node) {
+    PExpr left = getExprType(node.getLeft());
+    PExpr right = getExprType(node.getRight());
 
-      return (PExpr) new AIntExpr();
-    }
 
-    /* Handle '*' | '/' */
-    if (utility.isATimesExpr(node) || utility.isADivideExpr(node)) {
-      PExpr leftExpr;
-      PExpr rightExpr;
-      if (utility.isATimesExpr(node)) {
-        leftExpr = getExprType(((ATimesExpr) node).getLeft());
-        rightExpr = getExprType(((ATimesExpr) node).getRight());
-      } else {
-        leftExpr = getExprType(((ADivideExpr) node).getLeft());
-        rightExpr = getExprType(((ADivideExpr) node).getRight());
-      }
+  }
 
+  public void outATimesExpr(ATimesExpr node) {
+    PExpr leftExpr = getExprType(node.getLeft());
+    PExpr rightExpr = getExprType(node.getRight());
+
+    if (utility.isAStringExpr(leftExpr) || utility.isAStringExpr(rightExpr)) {
+      TStringconst str;
       if (utility.isAStringExpr(leftExpr)) {
-        TStringconst leftStr = ((AStringExpr) leftExpr).getStringconst();
-        printStringExprTypeError(leftStr.getLine(), leftStr.getPos(), "\"*\" and \"/\"");
-        System.exit(0);
-      } else if (utility.isAStringExpr(rightExpr)) {
-        TStringconst rightStr = ((AStringExpr) rightExpr).getStringconst();
-        printStringExprTypeError(rightStr.getLine(), rightStr.getPos(), "\"*\" and \"/\"");
-        System.exit(0);
+        str = ((AStringExpr) leftExpr).getStringconst();
+      } else {
+        str = ((AStringExpr) rightExpr).getStringconst();
       }
 
-      if (utility.isAIdExpr(leftExpr)) {
-        TId leftId = ((AIdExpr) leftExpr).getId();
-        String key = leftId.getText();
-
-        if (utility.isAStringType(symbolTable.get(key))) {
-          printStringExprTypeError(leftId.getLine(), leftId.getPos(), "\"*\" and \"/\"");
-          System.exit(0);
-        }
-      } else if (utility.isAIdExpr(rightExpr)) {
-        TId rightId = ((AIdExpr) rightExpr).getId();
-        String key = rightId.getText();
-
-        if (utility.isAStringType(symbolTable.get(key))) {
-          printStringExprTypeError(rightId.getLine(), rightId.getPos(), "\"*\" and \"/\"");
-          System.exit(0);
-        }
-      }
-
-      if (utility.isAFloatExpr(leftExpr)) {
-        return (PExpr) new AFloatExpr();
-      } else if (utility.isAFloatExpr(rightExpr)) {
-        return (PExpr) new AFloatExpr();
-      }
-
-      if (utility.isAIdExpr(leftExpr)) {
-        TId leftId = ((AIdExpr) leftExpr).getId();
-        String key = leftId.getText();
-        if (utility.isAFloatType(symbolTable.get(key))) {
-          return (PExpr) new AFloatExpr();
-        }
-      } else if (utility.isAIdExpr(rightExpr)) {
-        TId rightId = ((AIdExpr) rightExpr).getId();
-        String key = rightId.getText();
-        if (utility.isAFloatType(symbolTable.get(key))) {
-          return (PExpr) new AFloatExpr();
-        }
-      }
-
-      return (PExpr) new AIntExpr();
+      printStringExprTypeError(str.getLine(), str.getPos(), "*");
+      System.exit(0);
     }
 
-    /* Handle unary '-' */
-    if (utility.isAUnaryExpr(node)) {
-      return getExprType(((AUnaryExpr) node).getExpr());
+    if (utility.isAIdExpr(leftExpr) || utility.isAIdExpr(rightExpr)) {
+      TId id;
+      if (utility.isAIdExpr(leftExpr)) {
+        id = ((AIdExpr) leftExpr).getId();
+      } else {
+        id = ((AIdExpr) rightExpr).getId();
+      }
+
+      String key = id.getText();
+      if (utility.isAStringType(symbolTable.get(key))) {
+        printStringExprTypeError(id.getLine(), id.getPos(), "*");
+      }
+    }
+  }
+
+  public void outADivideExpr(ADivideExpr node) {
+    PExpr leftExpr = getExprType(node.getLeft());
+    PExpr rightExpr = getExprType(node.getRight());
+
+    if (utility.isAStringExpr(leftExpr) || utility.isAStringExpr(rightExpr)) {
+      TStringconst str;
+      if (utility.isAStringExpr(leftExpr)) {
+        str = ((AStringExpr) leftExpr).getStringconst();
+      } else {
+        str = ((AStringExpr) rightExpr).getStringconst();
+      }
+
+      printStringExprTypeError(str.getLine(), str.getPos(), "/");
+      System.exit(0);
     }
 
-    return node;
+    if (utility.isAIdExpr(leftExpr) || utility.isAIdExpr(rightExpr)) {
+      TId id;
+      if (utility.isAIdExpr(leftExpr)) {
+        id = ((AIdExpr) leftExpr).getId();
+      } else {
+        id = ((AIdExpr) rightExpr).getId();
+      }
+
+      String key = id.getText();
+      if (utility.isAStringType(symbolTable.get(key))) {
+        printStringExprTypeError(id.getLine(), id.getPos(), "/");
+      }
+    }
+  }
+
+  private PExpr getExprType(PExpr expr) {
+    /* Plus, minus, times and divide */
+    if (utility.isAPlusExpr(expr) || utility.isAMinusExpr(expr) || utility.isATimesExpr(expr) || utility.isADivideExpr(expr)) {
+      PExpr left;
+      PExpr right;
+
+      if (utility.isAPlusExpr(expr)) {
+        /* Plus expression */
+        APlusExpr plus = (APlusExpr) expr;
+        left = getExprType(plus.getLeft());
+        right = getExprType(plus.getRight());
+      } else if (utility.isAMinusExpr(expr)) {
+        /* Minus expression */
+        AMinusExpr minus = (AMinusExpr) expr;
+        left = getExprType(minus.getLeft());
+        right = getExprType(minus.getRight());
+      } else if (utility.isATimesExpr(expr)) {
+        /* Times expression */
+        ATimesExpr times = (ATimesExpr) expr;
+        left = getExprType(times.getLeft());
+        right = getExprType(times.getRight());
+      } else {
+        /* Divide expression */
+        ADivideExpr divide = (ADivideExpr) expr;
+        left = getExprType(divide.getLeft());
+        right = getExprType(divide.getRight());
+      }
+
+      /* Handle string */
+      if (utility.isAStringExpr(left) || utility.isAStringExpr(right)) {
+        return selectStringExpr(left, right);
+      }
+      if (isIdTypeString(left) || isIdTypeString(right)) {
+        return selectIdTypeString(left, right);
+      }
+
+      /* Handle float */
+      if (utility.isAFloatExpr(left) || utility.isAFloatExpr(right)) {
+        return selectFloatExpr(left, right);
+      }
+      if (isIdTypeFloat(left) || isIdTypeFloat(right)) {
+        return selectIdTypeFloat(left, right);
+      }
+
+      /* Handle int */
+      return selectNonIdExpr(left, right);
+    }
+
+    /* Unary minus expression */
+    if (utility.isAUnaryExpr(expr)) {
+      AUnaryExpr unary = (AUnaryExpr) expr;
+      return getExprType(unary.getExpr());
+    }
+
+    /* All base cases */
+    return expr;
+  }
+
+  private PExpr selectStringExpr(PExpr left, PExpr right) {
+    return utility.isAStringExpr(left) ? left : right;
+  }
+
+  private boolean isIdTypeString(PExpr expr) {
+    if (!utility.isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return utility.isAStringType(symbolTable.get(key));
+  }
+
+  private PExpr selectIdTypeString(PExpr left, PExpr right) {
+    return isIdTypeString(left) ? left : right;
+  }
+
+  private PExpr selectFloatExpr(PExpr left, PExpr right) {
+    return utility.isAFloatExpr(left) ? left : right;
+  }
+
+  private boolean isIdTypeFloat(PExpr expr) {
+    if (!utility.isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return utility.isAStringType(symbolTable.get(key));
+  }
+
+  private PExpr selectIdTypeFloat(PExpr left, PExpr right) {
+    return isIdTypeFloat(left) ? left : right;
+  }
+
+  private PExpr selectNonIdExpr(PExpr left, PExpr right) {
+    return !utility.isAIdExpr(left) ? left : right;
   }
 
   private void printStringExprTypeError(int line, int pos, String message) {
     System.out.println("Error: [" + line + "," + pos + "] " + message + " cannot be applied to string.");
   }
 
-  public void outAPlusExpr(APlusExpr node) {
-    PExpr left = node.getLeft();
-    PExpr right = node.getRight();
-  }
+  public void outAIdExpr(AIdExpr node) {
+    TId id = node.getId();
+    String key = id.getText();
 
-  public void outAMinusExpr(AMinusExpr node) {
-    PExpr left = node.getLeft();
-    PExpr right = node.getRight();
-  }
-
-  public void outATimesExpr(ATimesExpr node) {
-    getExprType(node.getLeft());
-    getExprType(node.getRight());
-  }
-
-  public void outADivideExpr(ADivideExpr node) {
-    getExprType(node.getLeft());
-    getExprType(node.getRight());
-  }
-
-  public String toString() {
-    return symbolTable.toString();
+    if (!symbolTable.containsKey(key)) {
+      System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Undifined identifier " + key + ".");
+      System.exit(0);
+    }
   }
 
 }

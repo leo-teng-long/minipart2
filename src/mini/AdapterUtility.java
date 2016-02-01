@@ -1,28 +1,23 @@
 package mini;
 
-import mini.analysis.*;
 import mini.node.*;
-import java.util.*;
+import mini.SymbolTable;
 
 public class AdapterUtility {
-
-  public AdapterUtility() {
-    /* Constructor */
-  }
 
   /*
     For declaration type checking
   */
 
-  public boolean isAIntType(PType type) {
+  public static boolean isAIntType(PType type) {
     return type instanceof AIntType;
   }
 
-  public boolean isAFloatType(PType type) {
+  public static boolean isAFloatType(PType type) {
     return type instanceof AFloatType;
   }
 
-  public boolean isAStringType(PType type) {
+  public static boolean isAStringType(PType type) {
     return type instanceof AStringType;
   }
 
@@ -30,40 +25,83 @@ public class AdapterUtility {
     For expression type checking
   */
 
-  public boolean isAPlusExpr(PExpr expr) {
+  public static boolean isAPlusExpr(PExpr expr) {
     return expr instanceof APlusExpr;
   }
 
-  public boolean isAMinusExpr(PExpr expr) {
+  public static boolean isAMinusExpr(PExpr expr) {
     return expr instanceof AMinusExpr;
   }
 
-  public boolean isATimesExpr(PExpr expr) {
+  public static boolean isATimesExpr(PExpr expr) {
     return expr instanceof ATimesExpr;
   }
 
-  public boolean isADivideExpr(PExpr expr) {
+  public static boolean isADivideExpr(PExpr expr) {
     return expr instanceof ADivideExpr;
   }
 
-  public boolean isAUnaryExpr(PExpr expr) {
+  public static boolean isAUnaryExpr(PExpr expr) {
     return expr instanceof AUnaryExpr;
   }
 
-  public boolean isAIdExpr(PExpr expr) {
+  public static boolean isAIdExpr(PExpr expr) {
     return expr instanceof AIdExpr;
   }
 
-  public boolean isAIntExpr(PExpr expr) {
+  public static boolean isAIntExpr(PExpr expr) {
     return expr instanceof AIntExpr;
   }
 
-  public boolean isAFloatExpr(PExpr expr) {
+  public static boolean isAFloatExpr(PExpr expr) {
     return expr instanceof AFloatExpr;
   }
 
-  public boolean isAStringExpr(PExpr expr) {
+  public static boolean isAStringExpr(PExpr expr) {
     return expr instanceof AStringExpr;
+  }
+
+  /*
+    For id and expression type checking
+  */
+
+  public static boolean isExprTypeInt(PExpr expr) {
+    return isAIntExpr(expr) || isIdTypeInt(expr);
+  }
+
+  public static boolean isExprTypeFloat(PExpr expr) {
+    return isAFloatExpr(expr) || isIdTypeFloat(expr);
+  }
+
+  public static boolean isExprTypeString(PExpr expr) {
+    return isAStringExpr(expr) || isIdTypeString(expr);
+  }
+
+  public static boolean isIdTypeInt(PExpr expr) {
+    if (!isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return isAIntType(SymbolTable.getVariableType(key));
+  }
+
+  public static boolean isIdTypeFloat(PExpr expr) {
+    if (!isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return isAFloatType(SymbolTable.getVariableType(key));
+  }
+
+  public static boolean isIdTypeString(PExpr expr) {
+    if (!isAIdExpr(expr)) {
+      return false;
+    }
+
+    String key = ((AIdExpr) expr).getId().getText();
+    return isAStringType(SymbolTable.getVariableType(key));
   }
 
 }

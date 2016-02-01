@@ -1,8 +1,7 @@
-
 var x : int;
 var y : int;
 
-x = 10;
+read x;
 y = 0;
 
 while x do

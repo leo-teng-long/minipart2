@@ -1,0 +1,9 @@
+# Error type: float for if-else statement
+var x : float;
+x = 10.0;
+
+if x then
+  print "Nonzero";
+else
+  print "Zero";
+endif

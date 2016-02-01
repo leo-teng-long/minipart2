@@ -3,15 +3,14 @@ package mini;
 import mini.analysis.*;
 import mini.node.*;
 import mini.AdapterUtility;
-import java.util.*;
+import mini.SymbolTable;
+import java.io.*;
 
 public class TypeChecker extends DepthFirstAdapter {
 
-  private HashMap<String, PType> symbolTable = new HashMap<String, PType>();
-  private AdapterUtility utility = new AdapterUtility();
-
-  public TypeChecker() {
-    /* Constructor */
+  /* Program */
+  public void outAProgramProg(AProgramProg node) {
+    outputSymbolTable();
   }
 
   /* Declaration */
@@ -20,11 +19,10 @@ public class TypeChecker extends DepthFirstAdapter {
     PType type = node.getType();
     String key = id.getText();
 
-    if (symbolTable.containsKey(key)) {
+    if (!SymbolTable.declareVariable(key, type)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Identifier " + key + " already declared.");
+      outputSymbolTable();
       System.exit(0);
-    } else {
-      symbolTable.put(key, type);
     }
   }
 
@@ -33,52 +31,58 @@ public class TypeChecker extends DepthFirstAdapter {
     TId id = node.getId();
     String key = id.getText();
 
-    PType type = symbolTable.get(key);
+    PType type = SymbolTable.getVariableType(key);
     PExpr expr = getExprType(node.getExpr());
 
     /* int var */
-    if (utility.isAIntType(type) && !isExprTypeInt(expr)) {
+    if (AdapterUtility.isAIntType(type) && !AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
+      outputSymbolTable();
       System.exit(0);
     }
     /* float var */
-    if (utility.isAFloatType(type) && !(isExprTypeInt(expr) || isExprTypeFloat(expr))) {
+    if (AdapterUtility.isAFloatType(type) && !(AdapterUtility.isExprTypeInt(expr) || AdapterUtility.isExprTypeFloat(expr))) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
+      outputSymbolTable();
       System.exit(0);
     }
     /* string var */
-    if (utility.isAStringType(type) && !isExprTypeString(expr)) {
+    if (AdapterUtility.isAStringType(type) && !AdapterUtility.isExprTypeString(expr)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
 
   /* If statment */
-  public void outAIfStmt(AIfStmt node) {
+  public void inAIfStmt(AIfStmt node) {
     PExpr expr = getExprType(node.getExpr());
 
-    if (!isExprTypeInt(expr)) {
+    if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
 
   /* If-else statement */
-  public void outAIfelseStmt(AIfelseStmt node) {
+  public void inAIfelseStmt(AIfelseStmt node) {
     PExpr expr = getExprType(node.getExpr());
 
-    if (!isExprTypeInt(expr)) {
+    if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
 
   /* While statement */
-  public void outAWhileStmt(AWhileStmt node) {
+  public void inAWhileStmt(AWhileStmt node) {
     PExpr expr = getExprType(node.getExpr());
 
-    if (!isExprTypeInt(expr)) {
+    if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
@@ -88,12 +92,14 @@ public class TypeChecker extends DepthFirstAdapter {
     PExpr leftExpr = getExprType(node.getLeft());
     PExpr rightExpr = getExprType(node.getRight());
 
-    if (isExprTypeString(leftExpr) && !isExprTypeString(rightExpr)) {
+    if (AdapterUtility.isExprTypeString(leftExpr) && !AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string addition not allowed.");
+      outputSymbolTable();
       System.exit(0);
     }
-    if (!isExprTypeString(leftExpr) && isExprTypeString(rightExpr)) {
+    if (!AdapterUtility.isExprTypeString(leftExpr) && AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string addition not allowed.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
@@ -103,12 +109,14 @@ public class TypeChecker extends DepthFirstAdapter {
     PExpr leftExpr = getExprType(node.getLeft());
     PExpr rightExpr = getExprType(node.getRight());
 
-    if (isExprTypeString(leftExpr) && !isExprTypeString(rightExpr)) {
+    if (AdapterUtility.isExprTypeString(leftExpr) && !AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string subtraction not allowed.");
+      outputSymbolTable();
       System.exit(0);
     }
-    if (!isExprTypeString(leftExpr) && isExprTypeString(rightExpr)) {
+    if (!AdapterUtility.isExprTypeString(leftExpr) && AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string subtraction not allowed.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
@@ -118,8 +126,9 @@ public class TypeChecker extends DepthFirstAdapter {
     PExpr leftExpr = getExprType(node.getLeft());
     PExpr rightExpr = getExprType(node.getRight());
 
-    if (isExprTypeString(leftExpr) || isExprTypeString(rightExpr)) {
+    if (AdapterUtility.isExprTypeString(leftExpr) || AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: * cannot be applied to string type.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
@@ -129,8 +138,9 @@ public class TypeChecker extends DepthFirstAdapter {
     PExpr leftExpr = getExprType(node.getLeft());
     PExpr rightExpr = getExprType(node.getRight());
 
-    if (isExprTypeString(leftExpr) || isExprTypeString(rightExpr)) {
+    if (AdapterUtility.isExprTypeString(leftExpr) || AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: / cannot be applied to string type.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
@@ -140,8 +150,9 @@ public class TypeChecker extends DepthFirstAdapter {
     TId id = node.getId();
     String key = id.getText();
 
-    if (!symbolTable.containsKey(key)) {
+    if (!SymbolTable.containVariable(key)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Identifier " + key + " not declared.");
+      outputSymbolTable();
       System.exit(0);
     }
   }
@@ -150,62 +161,23 @@ public class TypeChecker extends DepthFirstAdapter {
   * Private methods *****************************
   **********************************************/
 
-  private boolean isExprTypeInt(PExpr expr) {
-    return utility.isAIntExpr(expr) || isIdTypeInt(expr);
-  }
-
-  private boolean isExprTypeFloat(PExpr expr) {
-    return utility.isAFloatExpr(expr) || isIdTypeFloat(expr);
-  }
-
-  private boolean isExprTypeString(PExpr expr) {
-    return utility.isAStringExpr(expr) || isIdTypeString(expr);
-  }
-
-  private boolean isIdTypeInt(PExpr expr) {
-    if (!utility.isAIdExpr(expr)) {
-      return false;
-    }
-
-    String key = ((AIdExpr) expr).getId().getText();
-    return utility.isAIntType(symbolTable.get(key));
-  }
-
-  private boolean isIdTypeFloat(PExpr expr) {
-    if (!utility.isAIdExpr(expr)) {
-      return false;
-    }
-
-    String key = ((AIdExpr) expr).getId().getText();
-    return utility.isAFloatType(symbolTable.get(key));
-  }
-
-  private boolean isIdTypeString(PExpr expr) {
-    if (!utility.isAIdExpr(expr)) {
-      return false;
-    }
-
-    String key = ((AIdExpr) expr).getId().getText();
-    return utility.isAStringType(symbolTable.get(key));
-  }
-
   private PExpr getExprType(PExpr expr) {
     /* Plus, minus, times and divide */
-    if (utility.isAPlusExpr(expr) || utility.isAMinusExpr(expr) || utility.isATimesExpr(expr) || utility.isADivideExpr(expr)) {
+    if (AdapterUtility.isAPlusExpr(expr) || AdapterUtility.isAMinusExpr(expr) || AdapterUtility.isATimesExpr(expr) || AdapterUtility.isADivideExpr(expr)) {
       PExpr left;
       PExpr right;
 
-      if (utility.isAPlusExpr(expr)) {
+      if (AdapterUtility.isAPlusExpr(expr)) {
         /* Plus expression */
         APlusExpr plus = (APlusExpr) expr;
         left = getExprType(plus.getLeft());
         right = getExprType(plus.getRight());
-      } else if (utility.isAMinusExpr(expr)) {
+      } else if (AdapterUtility.isAMinusExpr(expr)) {
         /* Minus expression */
         AMinusExpr minus = (AMinusExpr) expr;
         left = getExprType(minus.getLeft());
         right = getExprType(minus.getRight());
-      } else if (utility.isATimesExpr(expr)) {
+      } else if (AdapterUtility.isATimesExpr(expr)) {
         /* Times expression */
         ATimesExpr times = (ATimesExpr) expr;
         left = getExprType(times.getLeft());
@@ -218,12 +190,12 @@ public class TypeChecker extends DepthFirstAdapter {
       }
 
       /* Handle string */
-      if (isExprTypeString(left) || isExprTypeString(right)) {
-        return isExprTypeString(left) ? left : right;
+      if (AdapterUtility.isExprTypeString(left) || AdapterUtility.isExprTypeString(right)) {
+        return AdapterUtility.isExprTypeString(left) ? left : right;
       }
       /* Handle float */
-      if (isExprTypeFloat(left) || isExprTypeFloat(right)) {
-        return isExprTypeFloat(left) ? left : right;
+      if (AdapterUtility.isExprTypeFloat(left) || AdapterUtility.isExprTypeFloat(right)) {
+        return AdapterUtility.isExprTypeFloat(left) ? left : right;
       }
 
       /* Handle int */
@@ -231,13 +203,25 @@ public class TypeChecker extends DepthFirstAdapter {
     }
 
     /* Unary minus expression */
-    if (utility.isAUnaryExpr(expr)) {
+    if (AdapterUtility.isAUnaryExpr(expr)) {
       AUnaryExpr unary = (AUnaryExpr) expr;
       return getExprType(unary.getExpr());
     }
 
     /* All base cases */
     return expr;
+  }
+
+  /* Output symbolTable to file */
+  private void outputSymbolTable() {
+    try  {
+      PrintWriter out = new PrintWriter(new FileWriter("a.symbol.txt"));
+      out.print(SymbolTable.getStringRepresentation());
+      out.close();
+    } catch (Exception ex) {
+      System.out.println("Exception: failed to output symbol table.");
+      System.exit(0);
+    }
   }
 
 }

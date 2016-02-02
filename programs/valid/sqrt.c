@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 int main() {
   float x;
@@ -17,6 +18,7 @@ int main() {
   }
 
   printf("%f\n", guess);
+  printf("%f\n", guess * guess);
 
   return 0;
 }

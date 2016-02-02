@@ -32,7 +32,7 @@ public class TypeChecker extends DepthFirstAdapter {
     String key = id.getText();
 
     PType type = SymbolTable.getVariableType(key);
-    PExpr expr = getExprType(node.getExpr());
+    PExpr expr = AdapterUtility.getExprType(node.getExpr());
 
     /* int var */
     if (AdapterUtility.isAIntType(type) && !AdapterUtility.isExprTypeInt(expr)) {
@@ -56,7 +56,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
   /* If statment */
   public void inAIfStmt(AIfStmt node) {
-    PExpr expr = getExprType(node.getExpr());
+    PExpr expr = AdapterUtility.getExprType(node.getExpr());
 
     if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
@@ -67,7 +67,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
   /* If-else statement */
   public void inAIfelseStmt(AIfelseStmt node) {
-    PExpr expr = getExprType(node.getExpr());
+    PExpr expr = AdapterUtility.getExprType(node.getExpr());
 
     if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
@@ -78,7 +78,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
   /* While statement */
   public void inAWhileStmt(AWhileStmt node) {
-    PExpr expr = getExprType(node.getExpr());
+    PExpr expr = AdapterUtility.getExprType(node.getExpr());
 
     if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
@@ -89,8 +89,8 @@ public class TypeChecker extends DepthFirstAdapter {
 
   /* Plus expression */
   public void outAPlusExpr(APlusExpr node) {
-    PExpr leftExpr = getExprType(node.getLeft());
-    PExpr rightExpr = getExprType(node.getRight());
+    PExpr leftExpr = AdapterUtility.getExprType(node.getLeft());
+    PExpr rightExpr = AdapterUtility.getExprType(node.getRight());
 
     if (AdapterUtility.isExprTypeString(leftExpr) && !AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string addition not allowed.");
@@ -106,8 +106,8 @@ public class TypeChecker extends DepthFirstAdapter {
 
   /* Minus expression */
   public void outAMinusExpr(AMinusExpr node) {
-    PExpr leftExpr = getExprType(node.getLeft());
-    PExpr rightExpr = getExprType(node.getRight());
+    PExpr leftExpr = AdapterUtility.getExprType(node.getLeft());
+    PExpr rightExpr = AdapterUtility.getExprType(node.getRight());
 
     if (AdapterUtility.isExprTypeString(leftExpr) && !AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string subtraction not allowed.");
@@ -123,8 +123,8 @@ public class TypeChecker extends DepthFirstAdapter {
 
   /* Times expression */
   public void outATimesExpr(ATimesExpr node) {
-    PExpr leftExpr = getExprType(node.getLeft());
-    PExpr rightExpr = getExprType(node.getRight());
+    PExpr leftExpr = AdapterUtility.getExprType(node.getLeft());
+    PExpr rightExpr = AdapterUtility.getExprType(node.getRight());
 
     if (AdapterUtility.isExprTypeString(leftExpr) || AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: * cannot be applied to string type.");
@@ -135,8 +135,8 @@ public class TypeChecker extends DepthFirstAdapter {
 
   /* Divide expression */
   public void outADivideExpr(ADivideExpr node) {
-    PExpr leftExpr = getExprType(node.getLeft());
-    PExpr rightExpr = getExprType(node.getRight());
+    PExpr leftExpr = AdapterUtility.getExprType(node.getLeft());
+    PExpr rightExpr = AdapterUtility.getExprType(node.getRight());
 
     if (AdapterUtility.isExprTypeString(leftExpr) || AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: / cannot be applied to string type.");
@@ -160,57 +160,6 @@ public class TypeChecker extends DepthFirstAdapter {
   /**********************************************
   * Private methods *****************************
   **********************************************/
-
-  private PExpr getExprType(PExpr expr) {
-    /* Plus, minus, times and divide */
-    if (AdapterUtility.isAPlusExpr(expr) || AdapterUtility.isAMinusExpr(expr) || AdapterUtility.isATimesExpr(expr) || AdapterUtility.isADivideExpr(expr)) {
-      PExpr left;
-      PExpr right;
-
-      if (AdapterUtility.isAPlusExpr(expr)) {
-        /* Plus expression */
-        APlusExpr plus = (APlusExpr) expr;
-        left = getExprType(plus.getLeft());
-        right = getExprType(plus.getRight());
-      } else if (AdapterUtility.isAMinusExpr(expr)) {
-        /* Minus expression */
-        AMinusExpr minus = (AMinusExpr) expr;
-        left = getExprType(minus.getLeft());
-        right = getExprType(minus.getRight());
-      } else if (AdapterUtility.isATimesExpr(expr)) {
-        /* Times expression */
-        ATimesExpr times = (ATimesExpr) expr;
-        left = getExprType(times.getLeft());
-        right = getExprType(times.getRight());
-      } else {
-        /* Divide expression */
-        ADivideExpr divide = (ADivideExpr) expr;
-        left = getExprType(divide.getLeft());
-        right = getExprType(divide.getRight());
-      }
-
-      /* Handle string */
-      if (AdapterUtility.isExprTypeString(left) || AdapterUtility.isExprTypeString(right)) {
-        return AdapterUtility.isExprTypeString(left) ? left : right;
-      }
-      /* Handle float */
-      if (AdapterUtility.isExprTypeFloat(left) || AdapterUtility.isExprTypeFloat(right)) {
-        return AdapterUtility.isExprTypeFloat(left) ? left : right;
-      }
-
-      /* Handle int */
-      return left;
-    }
-
-    /* Unary minus expression */
-    if (AdapterUtility.isAUnaryExpr(expr)) {
-      AUnaryExpr unary = (AUnaryExpr) expr;
-      return getExprType(unary.getExpr());
-    }
-
-    /* All base cases */
-    return expr;
-  }
 
   /* Output symbolTable to file */
   private void outputSymbolTable() {

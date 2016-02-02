@@ -12,6 +12,7 @@ quot = ( x / guess );
 guess = ( 0.5 *( guess + quot ));
 iter = ( iter - 1 );
 }
-printf("%f\n", guess);
+printf("%f\n",  guess );
+printf("%f\n", ( guess * guess ));
 return 0;
 }

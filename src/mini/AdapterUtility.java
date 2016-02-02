@@ -104,4 +104,55 @@ public class AdapterUtility {
     return isAStringType(SymbolTable.getVariableType(key));
   }
 
+  public static PExpr getExprType(PExpr expr) {
+    /* Plus, minus, times and divide */
+    if (isAPlusExpr(expr) || isAMinusExpr(expr) || isATimesExpr(expr) || isADivideExpr(expr)) {
+      PExpr left;
+      PExpr right;
+
+      if (isAPlusExpr(expr)) {
+        /* Plus expression */
+        APlusExpr plus = (APlusExpr) expr;
+        left = getExprType(plus.getLeft());
+        right = getExprType(plus.getRight());
+      } else if (isAMinusExpr(expr)) {
+        /* Minus expression */
+        AMinusExpr minus = (AMinusExpr) expr;
+        left = getExprType(minus.getLeft());
+        right = getExprType(minus.getRight());
+      } else if (isATimesExpr(expr)) {
+        /* Times expression */
+        ATimesExpr times = (ATimesExpr) expr;
+        left = getExprType(times.getLeft());
+        right = getExprType(times.getRight());
+      } else {
+        /* Divide expression */
+        ADivideExpr divide = (ADivideExpr) expr;
+        left = getExprType(divide.getLeft());
+        right = getExprType(divide.getRight());
+      }
+
+      /* Handle string */
+      if (isExprTypeString(left) || isExprTypeString(right)) {
+        return isExprTypeString(left) ? left : right;
+      }
+      /* Handle float */
+      if (isExprTypeFloat(left) || isExprTypeFloat(right)) {
+        return isExprTypeFloat(left) ? left : right;
+      }
+
+      /* Handle int */
+      return left;
+    }
+
+    /* Unary minus expression */
+    if (isAUnaryExpr(expr)) {
+      AUnaryExpr unary = (AUnaryExpr) expr;
+      return getExprType(unary.getExpr());
+    }
+
+    /* All base cases */
+    return expr;
+  }
+
 }

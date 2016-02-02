@@ -32,32 +32,70 @@ public class CodeEmitter extends DepthFirstAdapter {
 
   /* Declaration */
   public void outADeclareDecl(ADeclareDecl node) {
-    String code = "";
+    String id = node.getId().getText();
     PType type = node.getType();
 
+    String code = "";
     if (AdapterUtility.isAIntType(type)) {
-      code += "int ";
+      /* Declare int var */
+      code += "int " + id + ";";
     } else if (AdapterUtility.isAFloatType(type)) {
-      code += "float ";
+      /* Declare float var */
+      code += "float " + id + ";";
+    } else {
+      /* Declare string var */
+      // ......
     }
-    code += node.getId().getText() + ";";
 
     emit("OUT_DECL", code);
   }
 
   /* Assignment */
   public void outAAssignStmt(AAssignStmt node) {
-    String code = node.getId().getText() + " = ";
-    code += buildExprCode(node.getExpr());
-    code += ";";
+    String id = node.getId().getText();
+    PExpr expr = node.getExpr();
+
+    String code = id + " = ";
+    if (AdapterUtility.isExprTypeString(expr)) {
+      /* Assign to string var */
+      // ......
+    } else {
+      /* Assign to int/float var */
+      code += buildNumericalExprCode(expr) + ";";
+    }
 
     emit("OUT_ASSIGN", code);
+  }
+
+  /* If statement */
+  public void inAIfStmt(AIfStmt node) {
+    PExpr expr = node.getExpr();
+    String code = "if (" + buildNumericalExprCode(expr) + ") {";
+
+    emit("IN_IF", code);
+  }
+
+  public void outAIfStmt(AIfStmt node) {
+    emit("OUT_IF", null);
+  }
+
+  /* If-else statement */
+  public void inAIfelseStmt(AIfelseStmt node) {
+    // ......
+
+    emit("IN_IFELSE", null);
+  }
+
+  public void outAIfelseStmt(AIfelseStmt node) {
+    // ......
+
+    emit("OUT_IFELSE", null);
   }
 
   /* While statement */
   public void inAWhileStmt(AWhileStmt node) {
     PExpr expr = node.getExpr();
-    String code = "while (" + buildExprCode(expr) + ") {";
+    String code = "while (" + buildNumericalExprCode(expr) + ") {";
 
     emit("IN_WHILE", code);
   }
@@ -69,14 +107,18 @@ public class CodeEmitter extends DepthFirstAdapter {
   /* Read statement */
   public void outAReadStmt(AReadStmt node) {
     String id = node.getId().getText();
-    String code = "scanf(";
 
+    String code = "scanf(";
     if (AdapterUtility.isAIntType(SymbolTable.getVariableType(id))) {
-      code += "\"%d\", &" + id;
+      /* Read int from stdin */
+      code += "\"%d\", &" + id + ");";
     } else if (AdapterUtility.isAFloatType(SymbolTable.getVariableType(id))) {
-      code += "\"%f\", &" + id;
+      /* Read float from stdin */
+      code += "\"%f\", &" + id + ");";
+    } else {
+      /* Read string from stdin */
+      // ......
     }
-    code += ");";
 
     emit("OUT_READ", code);
   }
@@ -84,17 +126,19 @@ public class CodeEmitter extends DepthFirstAdapter {
   /* Print statement */
   public void outAPrintStmt(APrintStmt node) {
     PExpr expr = node.getExpr();
-    String code = "printf(";
+    PExpr exprType = AdapterUtility.getExprType(expr);
 
-    if (AdapterUtility.isAIdExpr(expr)) {
-      String id = ((AIdExpr) expr).getId().getText();
-      if (AdapterUtility.isExprTypeInt(expr)) {
-        code += "\"%d\\n\", " + id;
-      } else if (AdapterUtility.isExprTypeFloat(expr)) {
-        code += "\"%f\\n\", " + id;
-      }
+    String code = "printf(";
+    if (AdapterUtility.isExprTypeInt(exprType)) {
+      /* Print int to stdout */
+      code += "\"%d\\n\", " + buildNumericalExprCode(expr) + ");";
+    } else if (AdapterUtility.isExprTypeFloat(exprType)) {
+      /* Print float to stdout */
+      code += "\"%f\\n\", " + buildNumericalExprCode(expr) + ");";
+    } else {
+      /* Print string to stdout */
+      // ......
     }
-    code += ");";
 
     emit("OUT_PRINT", code);
   }
@@ -119,6 +163,18 @@ public class CodeEmitter extends DepthFirstAdapter {
       case "OUT_ASSIGN":
         out.println(code);
         break;
+      case "IN_IF":
+        out.println(code);
+        break;
+      case "OUT_IF":
+        out.println("}");
+        break;
+      case "IN_IFELSE":
+        // ......
+        break;
+      case "OUT_IFELSE":
+        // ......
+        break;
       case "IN_WHILE":
         out.println(code);
         break;
@@ -136,43 +192,75 @@ public class CodeEmitter extends DepthFirstAdapter {
     }
   }
 
-  private String buildExprCode(PExpr expr) {
+  private String buildNumericalExprCode(PExpr expr) {
     /* Plus, minus, times and divide expressions */
     if (AdapterUtility.isAPlusExpr(expr) || AdapterUtility.isAMinusExpr(expr) || AdapterUtility.isATimesExpr(expr) || AdapterUtility.isADivideExpr(expr)) {
       PExpr left;
       PExpr right;
-      char operator;
+      String operator;
 
       if (AdapterUtility.isAPlusExpr(expr)) {
         /* Plus operator */
         left = ((APlusExpr) expr).getLeft();
         right = ((APlusExpr) expr).getRight();
-        operator = '+';
+        operator = "+";
       } else if (AdapterUtility.isAMinusExpr(expr)) {
         /* Minus operator */
         left = ((AMinusExpr) expr).getLeft();
         right = ((AMinusExpr) expr).getRight();
-        operator = '-';
+        operator = "-";
       } else if (AdapterUtility.isATimesExpr(expr)) {
         /* Times operator */
         left = ((ATimesExpr) expr).getLeft();
         right = ((ATimesExpr) expr).getRight();
-        operator = '*';
+        operator = "*";
       } else {
         left = ((ADivideExpr) expr).getLeft();
         right = ((ADivideExpr) expr).getRight();
-        operator = '/';
+        operator = "/";
       }
 
-      return '(' + buildExprCode(left) + operator + buildExprCode(right) + ')';
+      return "(" + buildNumericalExprCode(left) + operator + buildNumericalExprCode(right) + ")";
     }
 
+    /* Unary minus */
     if (AdapterUtility.isAUnaryExpr(expr)) {
-
+      AUnaryExpr unary = (AUnaryExpr) expr;
+      return "-" + buildNumericalExprCode(unary.getExpr());
     }
 
     /* Base cases: id, int, float or string */
     return " " + expr.toString();
+  }
+
+  private String buildStringExprCode(PExpr expr) {
+    /* Plus and Minus string operations */
+    if (AdapterUtility.isAPlusExpr(expr) || AdapterUtility.isAMinusExpr(expr)) {
+      PExpr left;
+      PExpr right;
+
+      if (AdapterUtility.isAPlusExpr(expr)) {
+        left = ((APlusExpr) expr).getLeft();
+        right = ((APlusExpr) expr).getRight();
+
+        // ......
+      } else {
+        left = ((AMinusExpr) expr).getLeft();
+        right = ((AMinusExpr) expr).getRight();
+
+        // ......
+      }
+    }
+
+    /* Reverse string */
+    if (AdapterUtility.isAUnaryExpr(expr)) {
+      AUnaryExpr unary = (AUnaryExpr) expr;
+
+      // ......
+    }
+
+    /* string literals or variables */
+    return null;
   }
 
 }

@@ -9,11 +9,13 @@ import java.io.*;
 public class CodeEmitter extends DepthFirstAdapter {
 
   private PrintWriter out;
+  private int tabs;
 
   public CodeEmitter() {
     /* Constructor */
     try {
       out = new PrintWriter(new FileWriter("a.c"));
+      tabs = 0;
     } catch (Exception ex) {
       System.out.println("Exception: failed to emit code.");
       System.exit(0);
@@ -23,6 +25,7 @@ public class CodeEmitter extends DepthFirstAdapter {
   /* Program */
   public void inAProgramProg(AProgramProg node) {
     emit("IN_PROG", null);
+    tabs++;
   }
 
   public void outAProgramProg(AProgramProg node) {
@@ -38,13 +41,13 @@ public class CodeEmitter extends DepthFirstAdapter {
     String code = "";
     if (AdapterUtility.isAIntType(type)) {
       /* Declare int var */
-      code += "int " + id + ";";
+      code += "int " + id + " = 0;";
     } else if (AdapterUtility.isAFloatType(type)) {
       /* Declare float var */
-      code += "float " + id + ";";
+      code += "float " + id + " = 0.0;";
     } else {
       /* Declare string var */
-      // ......
+      // ...... (default vlaue: empty string)
     }
 
     emit("OUT_DECL", code);
@@ -73,9 +76,11 @@ public class CodeEmitter extends DepthFirstAdapter {
     String code = "if (" + buildNumericalExprCode(expr) + ") {";
 
     emit("IN_IF", code);
+    tabs++;
   }
 
   public void outAIfStmt(AIfStmt node) {
+    tabs--;
     emit("OUT_IF", null);
   }
 
@@ -98,9 +103,11 @@ public class CodeEmitter extends DepthFirstAdapter {
     String code = "while (" + buildNumericalExprCode(expr) + ") {";
 
     emit("IN_WHILE", code);
+    tabs++;
   }
 
   public void outAWhileStmt(AWhileStmt node) {
+    tabs--;
     emit("OUT_WHILE", null);
   }
 
@@ -154,19 +161,24 @@ public class CodeEmitter extends DepthFirstAdapter {
         out.println("int main() {");
         break;
       case "OUT_PROG":
+        addTabs();
         out.println("return 0;");
         out.println("}");
         break;
       case "OUT_DECL":
+        addTabs();
         out.println(code);
         break;
       case "OUT_ASSIGN":
+        addTabs();
         out.println(code);
         break;
       case "IN_IF":
+        addTabs();
         out.println(code);
         break;
       case "OUT_IF":
+        addTabs();
         out.println("}");
         break;
       case "IN_IFELSE":
@@ -176,19 +188,29 @@ public class CodeEmitter extends DepthFirstAdapter {
         // ......
         break;
       case "IN_WHILE":
+        addTabs();
         out.println(code);
         break;
       case "OUT_WHILE":
+        addTabs();
         out.println("}");
         break;
       case "OUT_READ":
+        addTabs();
         out.println(code);
         break;
       case "OUT_PRINT":
+        addTabs();
         out.println(code);
         break;
       default:
         break;
+    }
+  }
+
+  private void addTabs() {
+    for (int i = 0; i < tabs; i++) {
+      out.print("\t");
     }
   }
 

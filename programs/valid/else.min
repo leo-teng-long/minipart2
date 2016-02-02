@@ -1,0 +1,8 @@
+var x : int;
+read x;
+
+if x then
+  print x;
+else
+  print 0;
+endif

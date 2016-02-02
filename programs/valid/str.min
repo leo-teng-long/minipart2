@@ -4,5 +4,4 @@ var y : string;
 read x;
 read y;
 
-print x;
-print y;
+print -(x + y);

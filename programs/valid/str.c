@@ -1,32 +1,53 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-char* concatinate(char* s1, char* s2);
-char* reverse(char* s1, char* s2);
-
-int main() {
-  char* s;
-  s = concatinate("Hello", "world");
-  printf("%s\n", s);
-  return 0;
+char* scat(char* s1, char* s2) {
+  int l1 = strlen(s1);
+  int l2 = strlen(s2);
+  char* n = malloc(l1 + l2 + 1);
+  int i = 0;
+  while (i < l1) {
+    n[i] = s1[i];
+    i++;
+  }
+  while (i < l1 + l2) {
+    n[i] = s2[i - l1];
+    i++;
+  }
+  n[i] = '\0';
+  return n;
 }
 
-const char* concatinate(char* s1, char* s2) {
-  int len1 = strlen(s1);
-  int len2 = strlen(s2);
-  char s[len1 + len2 + 1];
-
+char* srev(char* s) {
+  int l = strlen(s);
+  char* n = malloc(l + 1);
+  int k = 0;
+  while (k < l) {
+    n[k] = s[k];
+    k++;
+  }
+  n[k] = '\0';
   int i = 0;
-  while (i < len1) {
-    s[i] = s1[i];
+  int j = l - 1;
+  while (i < j) {
+    char temp = n[i];
+    n[i] = n[j];
+    n[j] = n[i];
     i++;
+    j--;
   }
-  printf("%s\n", s);
-  while (i < len1 + len2 + 1) {
-    s[i] = s2[i - len1];
-    i++;
-  }
-  printf("%s\n", s);
+  return n;
+}
 
-  return s;
+int main() {
+  char s1[128];
+  char s2[128];
+
+  scanf("%s", s1);
+  scanf("%s", s2);
+
+  printf("%s\n", srev(scat(s1, s2)));
+
+  return 0;
 }

@@ -6,12 +6,12 @@ import mini.AdapterUtility;
 import mini.SymbolTable;
 import java.io.*;
 
-public class CodeEmitter extends DepthFirstAdapter {
+public class CodeGenerator extends DepthFirstAdapter {
 
   private PrintWriter out;
   private int tabs;
 
-  public CodeEmitter() {
+  public CodeGenerator() {
     /* Constructor */
     try {
       out = new PrintWriter(new FileWriter("a.c"));
@@ -58,9 +58,10 @@ public class CodeEmitter extends DepthFirstAdapter {
   public void outAAssignStmt(AAssignStmt node) {
     String id = node.getId().getText();
     PExpr expr = node.getExpr();
+    PExpr exprType = AdapterUtility.getExprType(expr);
 
     String code = id + " = ";
-    if (AdapterUtility.isExprTypeString(expr)) {
+    if (AdapterUtility.isExprTypeString(exprType)) {
       /* Assign to string var */
       code += buildStringExprCode(expr) + ";";
     } else {
@@ -312,21 +313,21 @@ public class CodeEmitter extends DepthFirstAdapter {
         /* Plus operator */
         left = ((APlusExpr) expr).getLeft();
         right = ((APlusExpr) expr).getRight();
-        operator = "+";
+        operator = " + ";
       } else if (AdapterUtility.isAMinusExpr(expr)) {
         /* Minus operator */
         left = ((AMinusExpr) expr).getLeft();
         right = ((AMinusExpr) expr).getRight();
-        operator = "-";
+        operator = " - ";
       } else if (AdapterUtility.isATimesExpr(expr)) {
         /* Times operator */
         left = ((ATimesExpr) expr).getLeft();
         right = ((ATimesExpr) expr).getRight();
-        operator = "*";
+        operator = " * ";
       } else {
         left = ((ADivideExpr) expr).getLeft();
         right = ((ADivideExpr) expr).getRight();
-        operator = "/";
+        operator = " / ";
       }
 
       return "(" + buildNumericalExprCode(left) + operator + buildNumericalExprCode(right) + ")";
@@ -338,8 +339,14 @@ public class CodeEmitter extends DepthFirstAdapter {
       return "(" + "-" + buildNumericalExprCode(unary.getExpr()) + ")";
     }
 
-    /* Base cases: id, int, float or string */
-    return " " + expr.toString();
+    /* Base cases: id, int or float */
+    if (AdapterUtility.isAIdExpr(expr)) {
+      return ((AIdExpr) expr).getId().getText();
+    } else if (AdapterUtility.isAIntExpr(expr)) {
+      return ((AIntExpr) expr).getIntconst().getText();
+    } else {
+      return ((AFloatExpr) expr).getFloatconst().getText();
+    }
   }
 
   private String buildStringExprCode(PExpr expr) {
@@ -347,7 +354,6 @@ public class CodeEmitter extends DepthFirstAdapter {
     if (AdapterUtility.isAPlusExpr(expr) || AdapterUtility.isAMinusExpr(expr)) {
       PExpr left;
       PExpr right;
-
       if (AdapterUtility.isAPlusExpr(expr)) {
         left = ((APlusExpr) expr).getLeft();
         right = ((APlusExpr) expr).getRight();

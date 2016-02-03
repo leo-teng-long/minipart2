@@ -1,2 +1,4 @@
-x : string ;
-y : string ;
+guess : float ;
+x : float ;
+iter : int ;
+quot : float ;

@@ -5,7 +5,7 @@ import mini.lexer.*;
 import mini.node.*;
 import mini.TypeChecker;
 import mini.PrettyPrinter;
-import mini.CodeEmitter;
+import mini.CodeGenerator;
 import java.io.*;
 
 public class Main {
@@ -13,13 +13,16 @@ public class Main {
     try {
       Lexer lexer = new Lexer(new PushbackReader(new InputStreamReader(System.in), 1024));
       Parser parser = new Parser(lexer);
+
       Start tree = parser.parse();
 
       TypeChecker checker = new TypeChecker();
-      CodeEmitter emitter = new CodeEmitter();
-      tree.apply(checker);
-      tree.apply(emitter);
+      PrettyPrinter printer = new PrettyPrinter();
+      CodeGenerator generator = new CodeGenerator();
 
+      tree.apply(checker);
+      tree.apply(printer);
+      tree.apply(generator);
     } catch (Exception e) {
       System.out.println("Invalid: " + e.getMessage());
     }

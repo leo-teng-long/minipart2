@@ -225,13 +225,9 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
     public void caseAIfelseStmt(AIfelseStmt node)
     {
         inAIfelseStmt(node);
+        if(node.getElse() != null)
         {
-            List<PStmt> copy = new ArrayList<PStmt>(node.getElseStmts());
-            Collections.reverse(copy);
-            for(PStmt e : copy)
-            {
-                e.apply(this);
-            }
+            node.getElse().apply(this);
         }
         {
             List<PStmt> copy = new ArrayList<PStmt>(node.getThenStmts());
@@ -317,6 +313,31 @@ public class ReversedDepthFirstAdapter extends AnalysisAdapter
             node.getExpr().apply(this);
         }
         outAPrintStmt(node);
+    }
+
+    public void inAElseList(AElseList node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAElseList(AElseList node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAElseList(AElseList node)
+    {
+        inAElseList(node);
+        {
+            List<PStmt> copy = new ArrayList<PStmt>(node.getElseStmts());
+            Collections.reverse(copy);
+            for(PStmt e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        outAElseList(node);
     }
 
     public void inAPlusExpr(APlusExpr node)

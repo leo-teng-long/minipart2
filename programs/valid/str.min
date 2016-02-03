@@ -5,3 +5,4 @@ read x;
 read y;
 
 print -(x + y);
+print "ccc" - ("aaa" + "bbb");

@@ -233,12 +233,9 @@ public class DepthFirstAdapter extends AnalysisAdapter
                 e.apply(this);
             }
         }
+        if(node.getElse() != null)
         {
-            List<PStmt> copy = new ArrayList<PStmt>(node.getElseStmts());
-            for(PStmt e : copy)
-            {
-                e.apply(this);
-            }
+            node.getElse().apply(this);
         }
         outAIfelseStmt(node);
     }
@@ -311,6 +308,30 @@ public class DepthFirstAdapter extends AnalysisAdapter
             node.getExpr().apply(this);
         }
         outAPrintStmt(node);
+    }
+
+    public void inAElseList(AElseList node)
+    {
+        defaultIn(node);
+    }
+
+    public void outAElseList(AElseList node)
+    {
+        defaultOut(node);
+    }
+
+    @Override
+    public void caseAElseList(AElseList node)
+    {
+        inAElseList(node);
+        {
+            List<PStmt> copy = new ArrayList<PStmt>(node.getElseStmts());
+            for(PStmt e : copy)
+            {
+                e.apply(this);
+            }
+        }
+        outAElseList(node);
     }
 
     public void inAPlusExpr(APlusExpr node)

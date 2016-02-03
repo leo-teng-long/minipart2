@@ -29,6 +29,7 @@ public class CodeEmitter extends DepthFirstAdapter {
   }
 
   public void outAProgramProg(AProgramProg node) {
+    tabs--;
     emit("OUT_PROG", null);
     out.close();
   }
@@ -47,7 +48,7 @@ public class CodeEmitter extends DepthFirstAdapter {
       code += "float " + id + " = 0.0;";
     } else {
       /* Declare string var */
-      // ...... (default vlaue: empty string)
+      code += "char " + id + "[128]" + " = \"\";";
     }
 
     emit("OUT_DECL", code);
@@ -61,7 +62,7 @@ public class CodeEmitter extends DepthFirstAdapter {
     String code = id + " = ";
     if (AdapterUtility.isExprTypeString(expr)) {
       /* Assign to string var */
-      // ......
+      code += buildStringExprCode(expr) + ";";
     } else {
       /* Assign to int/float var */
       code += buildNumericalExprCode(expr) + ";";
@@ -86,14 +87,22 @@ public class CodeEmitter extends DepthFirstAdapter {
 
   /* If-else statement */
   public void inAIfelseStmt(AIfelseStmt node) {
-    // ......
+    PExpr expr = node.getExpr();
+    String code = "if (" + buildNumericalExprCode(expr) + ") {";
 
-    emit("IN_IFELSE", null);
+    emit("IN_IFELSE", code);
+    tabs++;
+  }
+
+  public void inAElseList(AElseList node) {
+    tabs--;
+
+    emit("IN_ELSE", null);
+    tabs++;
   }
 
   public void outAIfelseStmt(AIfelseStmt node) {
-    // ......
-
+    tabs--;
     emit("OUT_IFELSE", null);
   }
 
@@ -124,7 +133,7 @@ public class CodeEmitter extends DepthFirstAdapter {
       code += "\"%f\", &" + id + ");";
     } else {
       /* Read string from stdin */
-      // ......
+      code += "\"%s\", " + id + ");";
     }
 
     emit("OUT_READ", code);
@@ -144,7 +153,7 @@ public class CodeEmitter extends DepthFirstAdapter {
       code += "\"%f\\n\", " + buildNumericalExprCode(expr) + ");";
     } else {
       /* Print string to stdout */
-      // ......
+      code += "\"%s\\n\", " + buildStringExprCode(expr) + ");";
     }
 
     emit("OUT_PRINT", code);
@@ -157,13 +166,14 @@ public class CodeEmitter extends DepthFirstAdapter {
   private void emit(String type, String code) {
     switch (type) {
       case "IN_PROG":
-        out.println("#include <stdio.h>");
-        out.println("int main() {");
+        emitIncludes();
+        emitPrototypes();
+        emitBeginMain();
         break;
       case "OUT_PROG":
-        addTabs();
-        out.println("return 0;");
-        out.println("}");
+        emitEndMain();
+        emitScatFunction();
+        emitSrevFunction();
         break;
       case "OUT_DECL":
         addTabs();
@@ -179,13 +189,19 @@ public class CodeEmitter extends DepthFirstAdapter {
         break;
       case "OUT_IF":
         addTabs();
-        out.println("}");
+        addEndBracket();
         break;
       case "IN_IFELSE":
-        // ......
+        addTabs();
+        out.println(code);
+        break;
+      case "IN_ELSE":
+        addTabs();
+        emitElse();
         break;
       case "OUT_IFELSE":
-        // ......
+        addTabs();
+        addEndBracket();
         break;
       case "IN_WHILE":
         addTabs();
@@ -193,7 +209,7 @@ public class CodeEmitter extends DepthFirstAdapter {
         break;
       case "OUT_WHILE":
         addTabs();
-        out.println("}");
+        addEndBracket();
         break;
       case "OUT_READ":
         addTabs();
@@ -208,10 +224,81 @@ public class CodeEmitter extends DepthFirstAdapter {
     }
   }
 
+  private void emitIncludes() {
+    out.println("#include <stdio.h>");
+    out.println("#include <stdlib.h>");
+    out.println("#include <string.h>");
+    out.println();
+  }
+
+  private void emitPrototypes() {
+    out.println("char* scat(char* s1, char* s2);");
+    out.println("char* srev(char* s);");
+    out.println();
+  }
+
+  private void emitBeginMain() {
+    out.println("int main() {");
+  }
+
+  private void emitEndMain() {
+    out.println("\treturn 0;");
+    out.println("}");
+    out.println();
+  }
+
+  private void emitScatFunction() {
+    out.println("char* scat(char* s1, char* s2) {");
+    out.println("\tint l1 = strlen(s1);");
+    out.println("\tint l2 = strlen(s2);");
+    out.println("\tchar* n = malloc(l1 + l2 + 1);");
+    out.println();
+    out.println("\tint i = 0;");
+    out.println("\twhile (i < l1) {");
+    out.println("\t\tn[i] = s1[i];");
+    out.println("\t\ti++;");
+    out.println("\t}");
+    out.println("\twhile (i < l1 + l2) {");
+    out.println("\t\tn[i] = s2[i - l1];");
+    out.println("\t\ti++;");
+    out.println("\t}");
+    out.println("\tn[i] = '\\0';");
+    out.println();
+    out.println("\treturn n;");
+    out.println("}");
+    out.println();
+  }
+
+  private void emitSrevFunction() {
+    out.println("char* srev(char* s) {");
+    out.println("\tint i = 0;");
+    out.println("\tint j = strlen(s) - 1;");
+    out.println();
+    out.println("\twhile (i < j) {");
+    out.println("\t\tchar temp = s[i];");
+    out.println("\t\ts[i] = s[j];");
+    out.println("\t\ts[j] = temp;");
+    out.println("\t\ti++;");
+    out.println("\t\tj--;");
+    out.println("\t}");
+    out.println();
+    out.println("\treturn s;");
+    out.println("}");
+    out.println();
+  }
+
+  private void emitElse() {
+    out.println("} else {");
+  }
+
   private void addTabs() {
     for (int i = 0; i < tabs; i++) {
       out.print("\t");
     }
+  }
+
+  private void addEndBracket() {
+    out.println("}");
   }
 
   private String buildNumericalExprCode(PExpr expr) {
@@ -248,7 +335,7 @@ public class CodeEmitter extends DepthFirstAdapter {
     /* Unary minus */
     if (AdapterUtility.isAUnaryExpr(expr)) {
       AUnaryExpr unary = (AUnaryExpr) expr;
-      return "-" + buildNumericalExprCode(unary.getExpr());
+      return "(" + "-" + buildNumericalExprCode(unary.getExpr()) + ")";
     }
 
     /* Base cases: id, int, float or string */
@@ -264,25 +351,26 @@ public class CodeEmitter extends DepthFirstAdapter {
       if (AdapterUtility.isAPlusExpr(expr)) {
         left = ((APlusExpr) expr).getLeft();
         right = ((APlusExpr) expr).getRight();
-
-        // ......
+        return "scat(" + buildStringExprCode(left) + ", " + buildStringExprCode(right) + ")";
       } else {
         left = ((AMinusExpr) expr).getLeft();
         right = ((AMinusExpr) expr).getRight();
-
-        // ......
+        return "scat(" + buildStringExprCode(left) + ", srev(" + buildStringExprCode(right) + ")" + ")";
       }
     }
 
     /* Reverse string */
     if (AdapterUtility.isAUnaryExpr(expr)) {
       AUnaryExpr unary = (AUnaryExpr) expr;
-
-      // ......
+      return "srev(" + buildStringExprCode(unary.getExpr()) + ")";
     }
 
     /* string literals or variables */
-    return null;
+    if (AdapterUtility.isAIdExpr(expr)) {
+      return ((AIdExpr) expr).getId().getText();
+    } else {
+      return ((AStringExpr) expr).getStringconst().getText();
+    }
   }
 
 }

@@ -23,6 +23,7 @@ public interface Analysis extends Switch
     void caseAWhileStmt(AWhileStmt node);
     void caseAReadStmt(AReadStmt node);
     void caseAPrintStmt(APrintStmt node);
+    void caseAElseList(AElseList node);
     void caseAPlusExpr(APlusExpr node);
     void caseAMinusExpr(AMinusExpr node);
     void caseATimesExpr(ATimesExpr node);

@@ -11,6 +11,7 @@ public class SymbolTable {
     if (symbolTable.containsKey(key)) {
       return false;
     }
+    
     symbolTable.put(key, type);
     return true;
   }

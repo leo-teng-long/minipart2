@@ -141,6 +141,12 @@ public class AnalysisAdapter implements Analysis
     }
 
     @Override
+    public void caseAElseList(AElseList node)
+    {
+        defaultCase(node);
+    }
+
+    @Override
     public void caseAPlusExpr(APlusExpr node)
     {
         defaultCase(node);

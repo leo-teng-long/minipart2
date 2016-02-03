@@ -1,4 +1,3 @@
-
 Package mini;
 
 Helpers
@@ -31,7 +30,6 @@ Tokens
   endif  = 'endif';
   read   = 'read';
   print  = 'print';
-
   equal  = '=';
   plus   = '+';
   minus  = '-';
@@ -99,8 +97,12 @@ Productions
   ifelse {-> stmt} =
     {if}                  if expr then stmt_list endif
                           {-> New stmt.if(expr.expr, [stmt_list.stmt])}
-  | {ifelse}              if expr then [then_stmts]:stmt_list else [else_stmts]:stmt_list endif
-                          {-> New stmt.ifelse(expr.expr, [then_stmts.stmt], [else_stmts.stmt])};
+  | {ifelse}              if expr then stmt_list else else_stmts endif
+                          {-> New stmt.ifelse(expr.expr, [stmt_list.stmt], else_stmts.list)};
+
+  else_stmts {-> list} =
+    {else}                stmt_list
+                          {-> New list.else([stmt_list.stmt])};
 
   loop {-> stmt} =
     {while}               while expr do stmt_list done
@@ -160,10 +162,13 @@ Abstract Syntax Tree
   stmt =
     {assign}    [id]:id [expr]:expr
   | {if}        [expr]:expr [then_stmts]:stmt*
-  | {ifelse}    [expr]:expr [then_stmts]:stmt* [else_stmts]:stmt*
+  | {ifelse}    [expr]:expr [then_stmts]:stmt* [else]:list
   | {while}     [expr]:expr [do_stmts]:stmt*
   | {read}      id
   | {print}     expr;
+
+  list =
+    {else}      [else_stmts]:stmt*;
 
   expr =
     {plus}      [left]:expr [right]:expr

@@ -1,6 +1,6 @@
 
 # Please change the next line to the actual path of your SableCC ver.3
-SABLECCDIR = ~/McGill/courses/comp_520/software/sablecc-3.7
+# SABLECCDIR = "......"
 
 all: clean compile_grammar compile_code
 

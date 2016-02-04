@@ -8,6 +8,13 @@ import java.io.*;
 
 public class TypeChecker extends DepthFirstAdapter {
 
+  private String fileName;
+
+  /* Constructor */
+  public TypeChecker(String fileName) {
+    this.fileName = fileName;
+  }
+
   /* Program */
   public void outAProgramProg(AProgramProg node) {
     outputSymbolTable();
@@ -22,7 +29,7 @@ public class TypeChecker extends DepthFirstAdapter {
     if (!SymbolTable.declareVariable(key, type)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Identifier " + key + " already declared.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -33,24 +40,23 @@ public class TypeChecker extends DepthFirstAdapter {
 
     PType type = SymbolTable.getVariableType(key);
     PExpr expr = AdapterUtility.getExprType(node.getExpr());
-
     /* int var */
     if (AdapterUtility.isAIntType(type) && !AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
     /* float var */
     if (AdapterUtility.isAFloatType(type) && !(AdapterUtility.isExprTypeInt(expr) || AdapterUtility.isExprTypeFloat(expr))) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
     /* string var */
     if (AdapterUtility.isAStringType(type) && !AdapterUtility.isExprTypeString(expr)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Assigned type does not match identifier type.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -61,7 +67,7 @@ public class TypeChecker extends DepthFirstAdapter {
     if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -72,7 +78,7 @@ public class TypeChecker extends DepthFirstAdapter {
     if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -83,7 +89,7 @@ public class TypeChecker extends DepthFirstAdapter {
     if (!AdapterUtility.isExprTypeInt(expr)) {
       System.out.println("Error: Condition does not evaluate to type int.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -95,12 +101,12 @@ public class TypeChecker extends DepthFirstAdapter {
     if (AdapterUtility.isExprTypeString(leftExpr) && !AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string addition not allowed.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
     if (!AdapterUtility.isExprTypeString(leftExpr) && AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string addition not allowed.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -112,12 +118,12 @@ public class TypeChecker extends DepthFirstAdapter {
     if (AdapterUtility.isExprTypeString(leftExpr) && !AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string subtraction not allowed.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
     if (!AdapterUtility.isExprTypeString(leftExpr) && AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: string | non-string subtraction not allowed.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -129,7 +135,7 @@ public class TypeChecker extends DepthFirstAdapter {
     if (AdapterUtility.isExprTypeString(leftExpr) || AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: * cannot be applied to string type.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -141,7 +147,7 @@ public class TypeChecker extends DepthFirstAdapter {
     if (AdapterUtility.isExprTypeString(leftExpr) || AdapterUtility.isExprTypeString(rightExpr)) {
       System.out.println("Error: / cannot be applied to string type.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -153,7 +159,7 @@ public class TypeChecker extends DepthFirstAdapter {
     if (!SymbolTable.containVariable(key)) {
       System.out.println("Error: [" + id.getLine() + "," + id.getPos() + "] Identifier " + key + " not declared.");
       outputSymbolTable();
-      System.exit(0);
+      System.exit(1);
     }
   }
 
@@ -164,12 +170,12 @@ public class TypeChecker extends DepthFirstAdapter {
   /* Output symbolTable to file */
   private void outputSymbolTable() {
     try  {
-      PrintWriter out = new PrintWriter(new FileWriter("a.symbol.txt"));
+      PrintWriter out = new PrintWriter(new FileWriter(fileName + ".symbol.txt"));
       out.print(SymbolTable.getStringRepresentation());
       out.close();
     } catch (Exception ex) {
       System.out.println("Exception: failed to output symbol table.");
-      System.exit(0);
+      System.exit(1);
     }
   }
 

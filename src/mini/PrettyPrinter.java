@@ -9,20 +9,25 @@ import java.io.*;
 public class PrettyPrinter extends DepthFirstAdapter {
 
   private PrintWriter out;
+  private String fileName;
   private int tabs;
 
-  public PrettyPrinter() {
-    /* Constructor */
-    try {
-      out = new PrintWriter(new FileWriter("a.pretty.min"));
-      tabs = 0;
-    } catch (Exception ex) {
-      System.out.println("Exception: failed to pretty print.");
-      System.exit(0);
-    }
+  /* Constructor */
+  public PrettyPrinter(String fileName) {
+    this.fileName = fileName;
+    tabs = 0;
   }
 
   /* Program */
+  public void inAProgramProg(AProgramProg node) {
+    try {
+      out = new PrintWriter(new FileWriter(fileName + ".pretty.min"));
+    } catch (Exception ex) {
+      System.out.println("Exception: failed to pretty print.");
+      System.exit(1);
+    }
+  }
+
   public void outAProgramProg(AProgramProg node) {
     out.close();
   }
@@ -31,7 +36,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
   public void outADeclareDecl(ADeclareDecl node) {
     String  id = node.getId().getText();
     PType type = node.getType();
-
     String str = "var " + id + " : ";
     if (AdapterUtility.isAIntType(type)) {
       /* Declare int */

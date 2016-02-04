@@ -9,21 +9,24 @@ import java.io.*;
 public class CodeGenerator extends DepthFirstAdapter {
 
   private PrintWriter out;
+  private String fileName;
   private int tabs;
 
-  public CodeGenerator() {
-    /* Constructor */
-    try {
-      out = new PrintWriter(new FileWriter("a.c"));
-      tabs = 0;
-    } catch (Exception ex) {
-      System.out.println("Exception: failed to emit code.");
-      System.exit(0);
-    }
+  /* Constructor */
+  public CodeGenerator(String fileName) {
+    this.fileName = fileName;
+    tabs = 0;
   }
 
   /* Program */
   public void inAProgramProg(AProgramProg node) {
+    try {
+      out = new PrintWriter(new FileWriter(fileName + ".c"));
+    } catch (Exception ex) {
+      System.out.println("Exception: failed to emit code.");
+      System.exit(1);
+    }
+
     emit("IN_PROG", null);
     tabs++;
   }
@@ -31,6 +34,7 @@ public class CodeGenerator extends DepthFirstAdapter {
   public void outAProgramProg(AProgramProg node) {
     tabs--;
     emit("OUT_PROG", null);
+
     out.close();
   }
 
